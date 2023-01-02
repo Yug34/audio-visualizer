@@ -3,64 +3,6 @@ import * as Styles from "./App.Styles";
 import {Flex} from "./Components/Flex";
 import {resizeCanvasToViewport} from "./utils";
 
-const drawCanvas = (
-    canvasCtx: CanvasRenderingContext2D | null,
-    bufferLength: number,
-    dataArrayLeft: Uint8Array,
-    dataArrayRight: Uint8Array,
-    HEIGHT: number,
-    WIDTH: number,
-    FFTSize: number,
-    padding: number = 20,
-    gapBetweenBars: number = 3
-): void => {
-    // Width of a single bar
-    const barWidth: number = (WIDTH - (FFTSize * (gapBetweenBars / 2)) - padding) / bufferLength;
-    let barHeightLeft: number;
-    let barHeightRight: number;
-
-    // padding on both (left and right) sides of the bar graph
-    let x: number = padding / 2;
-
-    for (let i = 0; i < bufferLength; i++) {
-        barHeightLeft = dataArrayLeft[i];
-        barHeightRight = dataArrayRight[i];
-
-        // Green bars for the Right channel
-        canvasCtx!.fillStyle = `rgb(50, ${(barHeightRight + 100)}, 50)`;
-        canvasCtx!.fillRect(
-            x,
-            (HEIGHT - barHeightRight) / 2,
-            barWidth,
-            barHeightRight / 2
-        );
-
-        // Blue bars for the Left channel
-        canvasCtx!.fillStyle = `rgb(50, 50, ${(barHeightLeft + 100)})`;
-        canvasCtx!.fillRect(
-            x,
-            HEIGHT / 2,
-            barWidth,
-            barHeightLeft / 2
-        );
-
-        canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
-        canvasCtx!.font = "16px Arial";
-        canvasCtx!.fillText(
-            `${barHeightLeft}`,
-            x + (barWidth / 2),
-            (HEIGHT + barHeightLeft) / 2 + 20
-        );
-        canvasCtx!.fillText(
-            `${barHeightRight}`,
-            x + (barWidth / 2),
-            (HEIGHT - barHeightRight) / 2 - 20
-        );
-
-        x += (barWidth + gapBetweenBars);
-    }
-};
-
 const App = () => {
     const [isStarted, setIsStarted] = useState<boolean>(false);
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
@@ -70,6 +12,136 @@ const App = () => {
     const [oscillatorStarted, setOscillatorStarted] = useState<boolean>(false);
     const [leftOscillatorFrequency, setLeftOscillatorFrequency] = useState<number>(19000);
     const [rightOscillatorFrequency, setRightOscillatorFrequency] = useState<number>(19000);
+
+    const drawCanvas = (
+        canvasCtx: CanvasRenderingContext2D | null,
+        bufferLength: number,
+        analyserRight: AnalyserNode,
+        analyserLeft: AnalyserNode,
+        HEIGHT: number,
+        WIDTH: number,
+        FFTSize: number,
+        padding: number = 20,
+        gapBetweenBars: number = 3
+    ): void => {
+        // Width of a single bar
+        const barWidth: number = (WIDTH - (FFTSize * (gapBetweenBars / 2)) - padding) / bufferLength;
+        let barHeightLeft: number;
+        let barHeightRight: number;
+
+        const drawFreqDomainPlot = () => {
+            // padding on both (left and right) sides of the bar graph
+            let x: number = padding / 2;
+
+            const dataArrayRight: Uint8Array = new Uint8Array(bufferLength);
+            const dataArrayLeft: Uint8Array = new Uint8Array(bufferLength);
+
+            analyserRight.getByteFrequencyData(dataArrayRight);
+            analyserLeft.getByteFrequencyData(dataArrayLeft);
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeightLeft = dataArrayLeft[i];
+                barHeightRight = dataArrayRight[i];
+
+                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+                canvasCtx!.fillText(
+                    "Freq. domain plot",
+                    (WIDTH / 2) - 50,
+                    (HEIGHT / 4) - 50
+                );
+
+                // Green bars for the Right channel
+                canvasCtx!.fillStyle = `rgb(50, ${(barHeightRight + 100)}, 50)`;
+                canvasCtx!.fillRect(
+                    x,
+                    (HEIGHT - (barHeightRight / 2)) / 2 - 200,
+                    barWidth,
+                    barHeightRight / 4
+                );
+
+                // Blue bars for the Left channel
+                canvasCtx!.fillStyle = `rgb(50, 50, ${(barHeightLeft + 100)})`;
+                canvasCtx!.fillRect(
+                    x,
+                    HEIGHT / 2 - 200,
+                    barWidth,
+                    barHeightLeft / 4
+                );
+
+                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+                canvasCtx!.fillText(
+                    `${barHeightLeft}`,
+                    x + (barWidth / 2),
+                    (HEIGHT + (barHeightLeft / 2)) / 2 - (200 - 20)
+                );
+                canvasCtx!.fillText(
+                    `${barHeightRight}`,
+                    x + (barWidth / 2),
+                    (HEIGHT - (barHeightRight / 2)) / 2 - (200 + 20)
+                );
+
+                x += (barWidth + gapBetweenBars);
+            }
+        }
+
+        const drawTimeDomainPlot = () => {
+            // padding on both (left and right) sides of the bar graph
+            let x: number = padding / 2;
+
+            const dataArrayRight: Uint8Array = new Uint8Array(bufferLength);
+            const dataArrayLeft: Uint8Array = new Uint8Array(bufferLength);
+
+            analyserRight.getByteTimeDomainData(dataArrayRight);
+            analyserLeft.getByteTimeDomainData(dataArrayLeft);
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeightLeft = dataArrayLeft[i];
+                barHeightRight = dataArrayRight[i];
+
+                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+                canvasCtx!.fillText(
+                    "Time domain plot",
+                    (WIDTH / 2) - 50,
+                    (HEIGHT / 2) - 125
+                );
+
+                // Green bars for the Right channel
+                canvasCtx!.fillStyle = `rgb(50, ${(barHeightRight + 100)}, 50)`;
+                canvasCtx!.fillRect(
+                    x,
+                    (HEIGHT - (barHeightRight / 2)) / 2 + 150,
+                    barWidth,
+                    barHeightRight / 4
+                );
+
+                // Blue bars for the Left channel
+                canvasCtx!.fillStyle = `rgb(50, 50, ${(barHeightLeft + 100)})`;
+                canvasCtx!.fillRect(
+                    x,
+                    HEIGHT / 2 + 150,
+                    barWidth,
+                    barHeightLeft / 4
+                );
+
+                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+                canvasCtx!.fillText(
+                    `${barHeightLeft}`,
+                    x + (barWidth / 2),
+                    (HEIGHT + (barHeightLeft / 2)) / 2 + (150 + 20)
+                );
+                canvasCtx!.fillText(
+                    `${barHeightRight}`,
+                    x + (barWidth / 2),
+                    (HEIGHT - (barHeightRight / 2)) / 2 + (150 - 20)
+                );
+
+                x += (barWidth + gapBetweenBars);
+            }
+        };
+
+        drawFreqDomainPlot();
+        drawTimeDomainPlot();
+    };
 
     const [leftOscillator, setLeftOscillator] = useState<OscillatorNode | null>(null);
     const [rightOscillator, setRightOscillator] = useState<OscillatorNode | null>(null);
@@ -130,6 +202,7 @@ const App = () => {
         resizeCanvasToViewport(canvas);
 
         const canvasCtx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+        canvasCtx!.font = "300 16px Arial";
         const WIDTH: number = canvas.width;
         const HEIGHT: number = canvas.height;
 
@@ -142,9 +215,6 @@ const App = () => {
         merger.connect(audioCtx.destination);
 
         const bufferLength: number = analyserRight.frequencyBinCount;
-
-        const dataArrayRight: Uint8Array = new Uint8Array(bufferLength);
-        const dataArrayLeft: Uint8Array = new Uint8Array(bufferLength);
 
         switch (visualizationType) {
             case "oscillator":
@@ -159,13 +229,10 @@ const App = () => {
                 const visualizeOscillator = (): void => {
                     requestAnimationFrame(visualizeOscillator);
 
-                    analyserRight.getByteFrequencyData(dataArrayRight);
-                    analyserLeft.getByteFrequencyData(dataArrayLeft);
-
                     canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                     canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                    drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
+                    drawCanvas(canvasCtx, bufferLength, analyserRight, analyserLeft, HEIGHT, WIDTH, fftSize);
                 };
 
                 visualizeOscillator();
@@ -185,13 +252,10 @@ const App = () => {
                         const visualizeMicrophone = () => {
                             requestAnimationFrame(visualizeMicrophone);
 
-                            analyserRight.getByteFrequencyData(dataArrayRight);
-                            analyserLeft.getByteFrequencyData(dataArrayLeft);
-
                             canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                             canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                            drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
+                            drawCanvas(canvasCtx, bufferLength, analyserRight, analyserLeft, HEIGHT, WIDTH, fftSize);
                         };
 
                         visualizeMicrophone();
@@ -216,13 +280,10 @@ const App = () => {
                             const visualizeFile = () => {
                                 requestAnimationFrame(visualizeFile);
 
-                                analyserRight.getByteFrequencyData(dataArrayRight);
-                                analyserLeft.getByteFrequencyData(dataArrayLeft);
-
                                 canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                                 canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                                drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
+                                drawCanvas(canvasCtx, bufferLength, analyserRight, analyserLeft, HEIGHT, WIDTH, fftSize);
                             };
 
                             visualizeFile();
@@ -293,8 +354,8 @@ const App = () => {
                                 Right Oscillator Frequency {rightOscillatorFrequency}
                                 <Styles.StyledSlider
                                     type="range"
-                                    step="100"
-                                    min="1000"
+                                    step={100}
+                                    min={200}
                                     max={22000}
                                     defaultValue={rightOscillatorFrequency}
                                     onChange={(e: ChangeEvent<HTMLInputElement>) => handleRightOscillatorFreqChange(e)}
@@ -304,8 +365,8 @@ const App = () => {
                                 Left Oscillator Frequency {leftOscillatorFrequency}
                                 <Styles.StyledSlider
                                     type="range"
-                                    step="100"
-                                    min="200"
+                                    step={100}
+                                    min={200}
                                     max={22000}
                                     defaultValue={leftOscillatorFrequency}
                                     onChange={(e: ChangeEvent<HTMLInputElement>) => handleLeftOscillatorFreqChange(e)}
