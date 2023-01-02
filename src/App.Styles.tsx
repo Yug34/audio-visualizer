@@ -35,7 +35,7 @@ export const StyledButton = styled(Flex)`
     }
 `;
 
-export const GainInputContainer = styled(Flex)`
+export const InputContainer = styled(Flex)`
     width: 80vw;
     row-gap: 1rem;
     box-sizing: border-box;
