@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useCallback, useRef, useState} from 'react';
 import * as Styles from "./App.Styles";
 import {Flex} from "./Components/Flex";
-import {resizeCanvasToViewport} from "./utils";
+import useMediaQuery, {resizeCanvasToViewport} from "./utils";
 
 const App = () => {
     const [isStarted, setIsStarted] = useState<boolean>(false);
@@ -13,7 +13,11 @@ const App = () => {
     const [leftOscillatorFrequency, setLeftOscillatorFrequency] = useState<number>(19000);
     const [rightOscillatorFrequency, setRightOscillatorFrequency] = useState<number>(19000);
 
-    const drawCanvas = (
+    //    Text on the canvas looks messy on small viewports;
+    // using this hook to remove the text for small viewports
+    const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+    const drawCanvas = useCallback((
         canvasCtx: CanvasRenderingContext2D | null,
         bufferLength: number,
         analyserRight: AnalyserNode,
@@ -33,9 +37,9 @@ const App = () => {
             // padding on both (left and right) sides of the bar graph
             let x: number = padding / 2;
 
+            // holding data for the left and right channels from the analyserNodes:
             const dataArrayRight: Uint8Array = new Uint8Array(bufferLength);
             const dataArrayLeft: Uint8Array = new Uint8Array(bufferLength);
-
             analyserRight.getByteFrequencyData(dataArrayRight);
             analyserLeft.getByteFrequencyData(dataArrayLeft);
 
@@ -68,17 +72,19 @@ const App = () => {
                     barHeightLeft / 4
                 );
 
-                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
-                canvasCtx!.fillText(
-                    `${barHeightLeft}`,
-                    x + (barWidth / 2),
-                    (HEIGHT + (barHeightLeft / 2)) / 2 - (200 - 20)
-                );
-                canvasCtx!.fillText(
-                    `${barHeightRight}`,
-                    x + (barWidth / 2),
-                    (HEIGHT - (barHeightRight / 2)) / 2 - (200 + 20)
-                );
+                if(isDesktop) {
+                    canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+                    canvasCtx!.fillText(
+                        `${barHeightLeft}`,
+                        x + (barWidth / 2),
+                        (HEIGHT + (barHeightLeft / 2)) / 2 - (200 - 20)
+                    );
+                    canvasCtx!.fillText(
+                        `${barHeightRight}`,
+                        x + (barWidth / 2),
+                        (HEIGHT - (barHeightRight / 2)) / 2 - (200 + 20)
+                    );
+                }
 
                 x += (barWidth + gapBetweenBars);
             }
@@ -123,18 +129,6 @@ const App = () => {
                     barHeightLeft / 4
                 );
 
-                canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
-                canvasCtx!.fillText(
-                    `${barHeightLeft}`,
-                    x + (barWidth / 2),
-                    (HEIGHT + (barHeightLeft / 2)) / 2 + (150 + 20)
-                );
-                canvasCtx!.fillText(
-                    `${barHeightRight}`,
-                    x + (barWidth / 2),
-                    (HEIGHT - (barHeightRight / 2)) / 2 + (150 - 20)
-                );
-
                 x += (barWidth + gapBetweenBars);
             }
         };
@@ -150,22 +144,25 @@ const App = () => {
             const rightAverage = dataArrayRight.reduce((a,b) => (a+b)) / dataArrayRight.length;
 
             canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+
+            if (isDesktop) {
+                canvasCtx!.fillText(
+                    `${Math.round(rightAverage)}`,
+                    (WIDTH / 2) - 80,
+                    (HEIGHT / 2) - (rightAverage / 2) - 20
+                );
+
+                canvasCtx!.fillText(
+                    `${Math.round(leftAverage)}`,
+                    (WIDTH / 2),
+                    (HEIGHT / 2) - (leftAverage / 2) - 20
+                );
+            }
+
             canvasCtx!.fillText(
                 "Audio Levels",
                 (WIDTH / 2) - 40,
                 (HEIGHT / 2) - 100
-            );
-
-            canvasCtx!.fillText(
-                `${Math.round(rightAverage)}`,
-                (WIDTH / 2) - 80,
-                (HEIGHT / 2) - (rightAverage / 2) - 20
-            );
-
-            canvasCtx!.fillText(
-                `${Math.round(leftAverage)}`,
-                (WIDTH / 2),
-                (HEIGHT / 2) - (leftAverage / 2) - 20
             );
 
             canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
@@ -196,7 +193,7 @@ const App = () => {
         drawFreqDomainPlot();
         drawTimeDomainPlot();
         drawAudioLevel();
-    };
+    }, [isDesktop]);
 
     const [leftOscillator, setLeftOscillator] = useState<OscillatorNode | null>(null);
     const [rightOscillator, setRightOscillator] = useState<OscillatorNode | null>(null);
@@ -348,7 +345,7 @@ const App = () => {
                 })
                 break;
         }
-    }, []);
+    }, [drawCanvas]);
 
     return (
         <Styles.Layout>
