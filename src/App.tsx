@@ -102,7 +102,7 @@ const App = () => {
                 canvasCtx!.fillText(
                     "Time domain plot",
                     (WIDTH / 2) - 50,
-                    (HEIGHT / 2) - 125
+                    (HEIGHT / 2) + 50
                 );
 
                 // Green bars for the Right channel
@@ -148,6 +148,25 @@ const App = () => {
 
             const leftAverage = dataArrayLeft.reduce((a,b) => (a+b)) / dataArrayLeft.length;
             const rightAverage = dataArrayRight.reduce((a,b) => (a+b)) / dataArrayRight.length;
+
+            canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+            canvasCtx!.fillText(
+                "Audio Levels",
+                (WIDTH / 2) - 40,
+                (HEIGHT / 2) - 100
+            );
+
+            canvasCtx!.fillText(
+                `${Math.round(rightAverage)}`,
+                (WIDTH / 2) - 80,
+                (HEIGHT / 2) - (rightAverage / 2) - 20
+            );
+
+            canvasCtx!.fillText(
+                `${Math.round(leftAverage)}`,
+                (WIDTH / 2),
+                (HEIGHT / 2) - (leftAverage / 2) - 20
+            );
 
             canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
             canvasCtx!.fillRect(
