@@ -10,19 +10,23 @@ const drawCanvas = (
     dataArrayRight: Uint8Array,
     HEIGHT: number,
     WIDTH: number,
-    fftSize: number = 32,
+    FFTSize: number,
     padding: number = 20,
     gapBetweenBars: number = 3
 ): void => {
-    const barWidth: number = (WIDTH - (fftSize * (gapBetweenBars / 2)) - padding) / bufferLength;
+    // Width of a single bar
+    const barWidth: number = (WIDTH - (FFTSize * (gapBetweenBars / 2)) - padding) / bufferLength;
     let barHeightLeft: number;
     let barHeightRight: number;
+
+    // padding on both (left and right) sides of the bar graph
     let x: number = padding / 2;
 
     for (let i = 0; i < bufferLength; i++) {
         barHeightLeft = dataArrayLeft[i];
         barHeightRight = dataArrayRight[i];
 
+        // Green bars for the Right channel
         canvasCtx!.fillStyle = `rgb(50, ${(barHeightRight + 100)}, 50)`;
         canvasCtx!.fillRect(
             x,
@@ -31,12 +35,26 @@ const drawCanvas = (
             barHeightRight / 2
         );
 
+        // Blue bars for the Left channel
         canvasCtx!.fillStyle = `rgb(50, 50, ${(barHeightLeft + 100)})`;
         canvasCtx!.fillRect(
             x,
             HEIGHT / 2,
             barWidth,
             barHeightLeft / 2
+        );
+
+        canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+        canvasCtx!.font = "16px Arial";
+        canvasCtx!.fillText(
+            `${barHeightLeft}`,
+            x + (barWidth / 2),
+            (HEIGHT + barHeightLeft) / 2 + 20
+        );
+        canvasCtx!.fillText(
+            `${barHeightRight}`,
+            x + (barWidth / 2),
+            (HEIGHT - barHeightRight) / 2 - 20
         );
 
         x += (barWidth + gapBetweenBars);
@@ -147,7 +165,7 @@ const App = () => {
                     canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                     canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                    drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH);
+                    drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
                 };
 
                 visualizeOscillator();
@@ -173,7 +191,7 @@ const App = () => {
                             canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                             canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                            drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH);
+                            drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
                         };
 
                         visualizeMicrophone();
@@ -204,7 +222,7 @@ const App = () => {
                                 canvasCtx!.fillStyle = "rgb(0, 0, 0)";
                                 canvasCtx!.fillRect(0, 0, WIDTH, HEIGHT);
 
-                                drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH);
+                                drawCanvas(canvasCtx, bufferLength, dataArrayRight, dataArrayLeft, HEIGHT, WIDTH, fftSize);
                             };
 
                             visualizeFile();
