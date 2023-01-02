@@ -139,8 +139,44 @@ const App = () => {
             }
         };
 
+        const drawAudioLevel = () => {
+            const dataArrayRight: Uint8Array = new Uint8Array(bufferLength);
+            const dataArrayLeft: Uint8Array = new Uint8Array(bufferLength);
+
+            analyserRight.getByteFrequencyData(dataArrayRight);
+            analyserLeft.getByteFrequencyData(dataArrayLeft);
+
+            const leftAverage = dataArrayLeft.reduce((a,b) => (a+b)) / dataArrayLeft.length;
+            const rightAverage = dataArrayRight.reduce((a,b) => (a+b)) / dataArrayRight.length;
+
+            canvasCtx!.fillStyle = `rgb(255, 255, 255)`;
+            canvasCtx!.fillRect(
+                (WIDTH / 2) - barWidth - gapBetweenBars,
+                (HEIGHT / 2),
+                2 * barWidth + gapBetweenBars,
+                3
+            );
+
+            canvasCtx!.fillStyle = `rgb(50, ${(rightAverage + 100)}, 50)`;
+            canvasCtx!.fillRect(
+                (WIDTH / 2) - (barWidth + gapBetweenBars),
+                (HEIGHT / 2),
+                barWidth,
+                - rightAverage / 2
+            );
+
+            canvasCtx!.fillStyle = `rgb(50, 50, ${(leftAverage + 100)})`;
+            canvasCtx!.fillRect(
+                (WIDTH / 2),
+                (HEIGHT / 2),
+                barWidth,
+                - leftAverage / 2
+            );
+        };
+
         drawFreqDomainPlot();
         drawTimeDomainPlot();
+        drawAudioLevel();
     };
 
     const [leftOscillator, setLeftOscillator] = useState<OscillatorNode | null>(null);
