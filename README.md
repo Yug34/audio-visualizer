@@ -1,46 +1,37 @@
-# Getting Started with Create React App
+# Audio Visualizer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+*Deployed at: https://yug34.github.io/audio-visualizer/*
 
-## Available Scripts
+Works based on the Web Audio API.
 
-In the project directory, you can run:
+### The visualizer has 3 modes of operation/input.
+1. Sound generated through JS (Oscillator).
+2. Sound from user's microphone.
+3. Sound from an audio file that a user can upload.
 
-### `yarn start`
+### The visualizer has 3 visualizations/outputs:
+1. The frequency-domain plot of the audio.
+2. The time-domain plot of the audio.
+3. An "audio-level", which is the average loudness of all the frequencies in the sample.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### File and microphone input:
+The audio input received form the microphone/file is split with a SplitterNode and 
+connected to two gain nodes, one for the left and right channel each.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Oscillator input
+In the case you are using oscillators to generate sound, there are two oscillators;
+one each for the left and right channels, connected to two gain nodes.
 
-### `yarn test`
+### Output
+The audio source nodes (audio from microphone/file/oscillators) are connected to two
+AnalyserNodes to collect audio data for each audio channel. Finally, these nodes are 
+merged with a MergerNode which is connected to the audio context's destination (your speakers).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Controls
+The web app allows you to control the sound by changing the gain of each 
+output channel, and in the case of an oscillator, control the gain as well as the
+frequencies of the oscillators of each audio channel independently.
 
-### `yarn build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### What would I do differently if I were to remake this?
+Got a bit carried away with this project and kept adding unplanned features, so I didn't
+focus much on code organization (the main App.tsx component is way too big).
