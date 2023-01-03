@@ -255,8 +255,8 @@ const App = () => {
 
         leftGainNode.connect(analyserLeft, 0);
         rightGainNode.connect(analyserRight, 0);
-        analyserRight.connect(merger, 0, 0);
-        analyserLeft.connect(merger, 0, 1);
+        analyserRight.connect(merger, 0, 1);
+        analyserLeft.connect(merger, 0, 0);
 
         merger.connect(audioCtx.destination);
 
