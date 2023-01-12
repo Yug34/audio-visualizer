@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Flex } from "./Components/Flex";
+import { Flex } from "./Components/Common/Flex";
 import { px2vw } from "./utils";
 
 export const StyledButton = styled(Flex)`

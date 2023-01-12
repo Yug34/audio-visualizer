@@ -1,5 +1,5 @@
 import * as Styles from "../../App.Styles";
-import {Flex} from "../Flex";
+import {Flex} from "../Common/Flex";
 import React, {ChangeEvent} from "react";
 
 interface ControlsProps {
