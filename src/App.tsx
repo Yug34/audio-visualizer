@@ -3,13 +3,13 @@ import * as Styles from "./App.Styles";
 import useMediaQuery, {resizeCanvasToViewport} from "./utils";
 import Controls from "./Components/Controls";
 
-const App = () => {
+const App = (): JSX.Element => {
     // AudioContext only loads if a user has gestured for it
     // tracking it with isStarted
     const [isStarted, setIsStarted] = useState<boolean>(false);
 
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
-    const inputRef = useRef<null | HTMLInputElement>(null);
+    const fileInputRef = useRef<null | HTMLInputElement>(null);
     const [leftGain, setLeftGain] = useState<number>(1);
     const [rightGain, setRightGain] = useState<number>(1);
     const [oscillatorStarted, setOscillatorStarted] = useState<boolean>(false);
@@ -119,16 +119,16 @@ const App = () => {
                     x,
                     (HEIGHT - (barHeightRight / 2)) / 2 + 150,
                     barWidth,
-                    barHeightRight / 4
+                    2
                 );
 
                 // Blue bars for the Left channel
                 canvasCtx!.fillStyle = `rgb(50, 50, ${(barHeightLeft + 100)})`;
                 canvasCtx!.fillRect(
                     x,
-                    HEIGHT / 2 + 150,
+                    HEIGHT / 2 + 150 + barHeightLeft / 4,
                     barWidth,
-                    barHeightLeft / 4
+                    2
                 );
 
                 x += (barWidth + gapBetweenBars);
@@ -299,7 +299,7 @@ const App = () => {
                     .catch(err => console.log(err));
                 break;
             case "file":
-                const file = inputRef!.current!.files![0];
+                const file = fileInputRef!.current!.files![0];
 
                 file.arrayBuffer().then((buffer) => {
                     audioCtx.decodeAudioData(buffer, (audio) => {
@@ -339,7 +339,7 @@ const App = () => {
                     <input
                         id="uploadAudio"
                         style={{display: "none"}}
-                        ref={inputRef}
+                        ref={fileInputRef}
                         onChange={() => visualizeAudio(canvasRef.current!, "file")}
                         type="file"
                         accept="audio/*"
