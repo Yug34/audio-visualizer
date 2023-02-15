@@ -6,11 +6,6 @@ export const px2vh = (size: number, height: number = 1080): string => `${(size /
 export const resizeCanvasToViewport = (canvas: HTMLCanvasElement): void => {
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-
-    window.addEventListener('resize', () => {
-        canvas.height = window.innerHeight;
-        canvas.width = window.innerWidth;
-    });
 };
 
 export const useMediaQuery = (query: string) => {
